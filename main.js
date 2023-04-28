@@ -1,72 +1,81 @@
+import {promises as fs} from "fs"
+
 class ProductManager {
     constructor() {
-        this.products = [];
+        this.path = "./products.txt"
+        this.id = 0 
+        this.products = []
     }
 
-    static id = 0
+    addProduct = async (title, description, price, thumbnail, code, stock) => {
+        this.id++
 
-    addProduct(title, description, price, thumbnail, code, stock){
-        for (let i = 0; i < this.products.length;i++) {
-            if(this.products[i].code === code) {
-                console.log(`El codigo ${code} esta repetido`);
-                break;
-            }
+        let newProduct = {
+            title,
+            description,
+            price,
+            thumbnail,
+            code,
+            stock,
+            id: this.id
         }
 
-        const newProduct ={
-            title, 
-            description, 
-            price, 
-            thumbnail, 
-            code, 
-            stock
+        this.products.push(newProduct)
+        
+        await fs.writeFile(this.path, JSON.stringify(this.products));
+    }
+
+    readProducts = async () => {
+        let data = await fs.readFile(this.path, "utf-8")
+        return JSON.parse(data)
+    }
+
+    getProducts = async () => {
+        let data2 = await this.readProducts()
+        return console.log(data2)
+    }
+
+    getProductsById = async (id) => {
+        let data3 = await this.readProducts()
+        if(!data3.find(product => product.id === id)){
+            console.log("Product not found")
+        }else{
+            console.log (data3.find(product => product.id === id))
         }
-
-        if (!Object.values(newProduct).includes(undefined)) {
-
-            ProductManager.id++
-            this.products.push ({
-                ...newProduct,
-                id:ProductManager.id,
-            });
-        }else {
-            console.log("Todos los campos son requeridos")
-        }
+       
     }
 
-    getProduct(){
-        return this.products;
+    deleteProductById = async (id) => {
+        let data3 = await this.readProducts()
+        let productFilter = data3.filter(product => product.id != id)
+
+        await fs.writeFile(this.path, JSON.stringify(productFilter));
+        console.log("Product deleted successfully")
     }
 
-    exists (id) {
-       return this.products.find((product) => product.id === id) 
+    updateProducts = async ({id, ...product}) => {
+       await this.deleteProductById(id)
+       let productOld = await this.readProducts()
+        let updatedProducts = [{...product, id}, ...productOld]
+        await fs.writeFile(this.path, JSON.stringify(updatedProducts));
     }
+}
 
-    getProductById(id){
-        !this.exists(id) ? console.log("Not Found") : console.log(this.exists(id));    
-      }
-  }  
+const products = new ProductManager();
 
+/*  products.addProduct("pan", "lacatal", 700, "image1", "abc123", 1);
+ products.addProduct("azucar", "blanca", 150, "image2", "abc345", 3);
+products.addProduct("queso", "azul", 4350, "image2", "abc4345", 2);  */
 
-const products = new ProductManager()
-//First call = empty array
-console.log(products.getProduct());
-
-//Add Product
-products.addProduct('title1', 'description1', 101, "thumbnail1", "qwerty1", 1);
-products.addProduct('title2', 'description2', 202, "thumbnail2", "qwerty2", 2);
-
-//Second call = Array with product
-console.log(products.getProduct());
-
-//Repeated code validation
-products.addProduct('title2', 'description2', 102, "thumbnail2", "qwerty1", 212);
-
-//Search by ID
-products.getProductById(2)
-
-//Search by ID not found
-products.getProductById(400)
-
-
-
+/* products.getProducts() */
+/* products.getProductsById(3) */
+/* products.deleteProductById(2) */
+products.updateProducts({
+title: 'agua',
+description: 'transparente',
+price: 1999,
+thumbnail: 'sin imagen',
+code: '1234567',
+stock: 1,
+id: 3
+})

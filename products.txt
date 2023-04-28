@@ -1,0 +1,1 @@
+[{"title":"agua","description":"transparente","price":1999,"thumbnail":"sin imagen","code":"1234567","stock":1,"id":3},{"title":"pan","description":"lacatal","price":700,"thumbnail":"image1","code":"abc123","stock":1,"id":1}]
